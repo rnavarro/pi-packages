@@ -114,12 +114,15 @@ export class PermissionGateHandler {
     const getSessionRuleset = () => this.session.getSessionRuleset();
     const approveSessionRule = (surface: string, pattern: string) =>
       this.session.approveSessionRule(surface, pattern);
+    const approvePersistentRule = (surface: string, pattern: string) =>
+      this.session.approvePersistentRule(surface, pattern);
 
     // ── Shared runner deps (built once, reused for all gates) ────────────
     const runnerDeps: GateRunnerDeps = {
       checkPermission,
       getSessionRuleset,
       approveSessionRule,
+      approvePersistentRule,
       writeReviewLog,
       emitDecision,
       canConfirm,

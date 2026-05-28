@@ -63,6 +63,10 @@ export function describeToolGate(
       surface: suggestion.surface,
       pattern: suggestion.pattern,
     },
+    persistentApproval: {
+      surface: suggestion.surface,
+      pattern: suggestion.pattern,
+    },
     promptDetails: {
       source: "tool_call",
       agentName: tcc.agentName,
@@ -70,6 +74,7 @@ export function describeToolGate(
       toolCallId: tcc.toolCallId,
       toolName: tcc.toolName,
       sessionLabel: suggestion.label,
+      persistentLabel: suggestion.persistentLabel,
       ...permissionLogContext,
     },
     logContext: {

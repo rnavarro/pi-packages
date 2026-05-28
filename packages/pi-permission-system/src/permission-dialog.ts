@@ -1,6 +1,7 @@
 export type PermissionDecisionState =
   | "approved"
   | "approved_for_session"
+  | "approved_permanently"
   | "denied"
   | "denied_with_reason";
 
@@ -23,6 +24,7 @@ export interface PermissionDecisionUi {
 
 const APPROVE_OPTION = "Yes";
 const APPROVE_FOR_SESSION_OPTION = "Yes, for this session";
+const APPROVE_PERMANENTLY_OPTION = "Yes, permanently";
 const DENY_OPTION = "No";
 const DENY_WITH_REASON_OPTION = "No, provide reason";
 
@@ -59,6 +61,7 @@ export function isPermissionDecisionState(
   return (
     value === "approved" ||
     value === "approved_for_session" ||
+    value === "approved_permanently" ||
     value === "denied" ||
     value === "denied_with_reason"
   );
@@ -67,6 +70,9 @@ export function isPermissionDecisionState(
 export interface RequestPermissionOptions {
   /** Override the "for this session" option label (e.g. to show the suggested pattern). */
   sessionLabel?: string;
+  /** Override the "permanently" option label (e.g. to show the suggested pattern).
+   * When absent/undefined, the permanent option is not shown in the dialog. */
+  persistentLabel?: string;
 }
 
 export async function requestPermissionDecisionFromUi(
@@ -76,16 +82,17 @@ export async function requestPermissionDecisionFromUi(
   options?: RequestPermissionOptions,
 ): Promise<PermissionPromptDecision> {
   const sessionOption = options?.sessionLabel ?? APPROVE_FOR_SESSION_OPTION;
-  const decisionOptions = [
+  const persistentOption = options?.persistentLabel;
+  const decisionOptions: string[] = [
     APPROVE_OPTION,
     sessionOption,
-    DENY_OPTION,
-    DENY_WITH_REASON_OPTION,
-  ] as const;
+  ];
+  if (persistentOption) {
+    decisionOptions.push(persistentOption);
+  }
+  decisionOptions.push(DENY_OPTION, DENY_WITH_REASON_OPTION);
 
-  const selected = await ui.select(`${title}\n${message}`, [
-    ...decisionOptions,
-  ]);
+  const selected = await ui.select(`${title}\n${message}`, decisionOptions);
 
   if (selected === APPROVE_OPTION) {
     return {
@@ -98,6 +105,13 @@ export async function requestPermissionDecisionFromUi(
     return {
       approved: true,
       state: "approved_for_session",
+    };
+  }
+
+  if (persistentOption && selected === persistentOption) {
+    return {
+      approved: true,
+      state: "approved_permanently",
     };
   }
 

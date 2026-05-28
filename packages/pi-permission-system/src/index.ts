@@ -14,6 +14,7 @@ import { registerPermissionRpcHandlers } from "./permission-event-rpc";
 import { emitReadyEvent } from "./permission-events";
 import { PermissionPrompter } from "./permission-prompter";
 import { PermissionSession } from "./permission-session";
+import { PersistentRulesWriter } from "./persistent-rules-writer";
 import {
   createExtensionRuntime,
   logResolvedConfigPaths,
@@ -62,6 +63,17 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
 
   refreshExtensionConfig(runtime);
 
+  const persistentRulesWriter = new PersistentRulesWriter(
+    getGlobalConfigPath(runtime.agentDir),
+    (msg, kind) => {
+      if (kind === "error") {
+        runtime.writeReviewLog("persistent_rule.notify", { message: msg, kind });
+      }
+      runtime.runtimeContext?.ui.notify(msg, kind);
+    },
+    runtime.writeDebugLog.bind(runtime),
+  );
+
   const session = new PermissionSession(
     runtime,
     createSessionLogger(runtime),
@@ -85,6 +97,7 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
           ),
         }),
       promptPermission: (ctx, details) => prompter.prompt(ctx, details),
+      approvePersistentRule: (surface, pattern) => persistentRulesWriter.approve(surface, pattern),
     },
   );
 

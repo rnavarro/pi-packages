@@ -87,6 +87,9 @@ export async function runGateCheck(
         : undefined
     : undefined;
 
+  // Resolve persistent approval (single-pattern only)
+  const singlePersistentApproval = descriptor.persistentApproval;
+
   // Construct messages from the centralized formatter.
   const messages = {
     denyReason: formatDenyReason(descriptor.denialContext),
@@ -100,6 +103,7 @@ export async function runGateCheck(
     state: check.state,
     canConfirm,
     sessionApproval: singleSessionApproval,
+    persistentApproval: singlePersistentApproval,
     promptForApproval: async () => {
       const decision = await deps.promptPermission({
         requestId: toolCallId,
@@ -114,9 +118,11 @@ export async function runGateCheck(
     messages,
   });
 
-  // 4. Determine whether session approval was granted
+  // 4. Determine whether session/persistent approval was granted
   const hasSessionApproval =
     gateResult.action === "allow" && gateResult.sessionApproval !== undefined;
+  const hasPersistentApproval =
+    gateResult.action === "allow" && gateResult.persistentApproval !== undefined;
 
   // 5. Emit decision event
   deps.emitDecision({
@@ -129,6 +135,7 @@ export async function runGateCheck(
       hasSessionApproval,
       canConfirm,
       autoApproved,
+      hasPersistentApproval,
     ),
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- ?? null normalises undefined to null for the log record
     origin: check.origin ?? null,
@@ -150,6 +157,20 @@ export async function runGateCheck(
         );
       }
     }
+  }
+
+  // 7. Record persistent approval
+  if (gateResult.action === "allow" && hasPersistentApproval) {
+    const { surface, pattern } = gateResult.persistentApproval!;
+    const result = deps.approvePersistentRule(surface, pattern);
+    deps.writeReviewLog("permission_request.persistent_approved", {
+      ...descriptor.logContext,
+      agentName,
+      resolution: result.added ? "user_approved_permanently" : "persistent_already_present",
+      persistentPattern: pattern,
+      persistentAdded: result.added,
+      persistentError: result.error ?? null,
+    });
   }
 
   if (gateResult.action === "block") {

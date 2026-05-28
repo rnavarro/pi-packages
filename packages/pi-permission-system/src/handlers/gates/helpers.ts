@@ -24,6 +24,8 @@ export function deriveDecisionValue(
  * @param action    - The gate's resulting action ("allow" | "block").
  * @param hasSession - True when the gate result carries a sessionApproval
  *                    (indicates the user chose "for this session").
+ * @param hasPersistent - True when the gate result carries a persistentApproval
+ *                    (indicates the user chose "permanently").
  * @param canConfirm - Whether an interactive prompt was available.
  */
 export function deriveResolution(
@@ -32,12 +34,14 @@ export function deriveResolution(
   hasSession: boolean,
   canConfirm: boolean,
   autoApproved = false,
+  hasPersistent = false,
 ): PermissionDecisionResolution {
   if (state === "allow") return "policy_allow";
   if (state === "deny") return "policy_deny";
   // state === "ask"
   if (action === "allow") {
     if (autoApproved) return "auto_approved";
+    if (hasPersistent) return "user_approved_permanently";
     return hasSession ? "user_approved_for_session" : "user_approved";
   }
   return canConfirm ? "user_denied" : "confirmation_unavailable";

@@ -29,6 +29,9 @@ export interface PromptPermissionDetails {
   toolInputPreview?: string;
   /** Override label for the "for this session" dialog option. */
   sessionLabel?: string;
+  /** Override label for the "permanently" dialog option.
+   * When absent/undefined, the permanent option is not shown in the dialog. */
+  persistentLabel?: string;
 }
 
 /** Mockable contract for permission prompting. */
@@ -95,7 +98,11 @@ export class PermissionPrompter implements PermissionPrompterApi {
       ctx,
       details.message,
       this.buildForwardingDeps(),
-      details.sessionLabel ? { sessionLabel: details.sessionLabel } : undefined,
+      details.sessionLabel
+        ? { sessionLabel: details.sessionLabel, persistentLabel: details.persistentLabel }
+        : details.persistentLabel
+          ? { persistentLabel: details.persistentLabel }
+          : undefined,
     );
 
     this.writeReviewEntry(

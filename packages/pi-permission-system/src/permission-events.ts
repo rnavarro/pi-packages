@@ -76,6 +76,7 @@ export type PermissionDecisionResolution =
   | "infrastructure_auto_allowed"
   | "user_approved"
   | "user_approved_for_session"
+  | "user_approved_permanently"
   | "user_denied"
   | "auto_approved"
   | "confirmation_unavailable";

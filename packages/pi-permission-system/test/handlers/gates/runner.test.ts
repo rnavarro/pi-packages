@@ -62,6 +62,7 @@ function makeRunnerDeps(
     checkPermission: vi.fn().mockReturnValue(makeCheckResult("allow")),
     getSessionRuleset: vi.fn().mockReturnValue([]),
     approveSessionRule: vi.fn(),
+    approvePersistentRule: vi.fn().mockReturnValue({ added: true }),
     writeReviewLog: vi.fn(),
     emitDecision: vi.fn(),
     canConfirm: vi.fn().mockReturnValue(true),

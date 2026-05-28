@@ -83,6 +83,7 @@ function makeRuntimeDeps(): PermissionSessionRuntimeDeps {
     promptPermission: vi
       .fn()
       .mockResolvedValue({ approved: true, state: "approved" }),
+    approvePersistentRule: vi.fn().mockReturnValue({ added: true }),
   };
 }
 

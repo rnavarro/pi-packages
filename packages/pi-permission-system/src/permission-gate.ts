@@ -2,7 +2,7 @@ import type { PermissionPromptDecision } from "./permission-dialog";
 
 /** Result of applying the permission gate. */
 export type PermissionGateResult =
-  | { action: "allow"; sessionApproval?: { surface: string; pattern: string } }
+  | { action: "allow"; sessionApproval?: { surface: string; pattern: string }; persistentApproval?: { surface: string; pattern: string } }
   | { action: "block"; reason: string };
 
 /** Everything the gate needs — no direct dependency on ExtensionContext. */
@@ -22,6 +22,13 @@ export interface PermissionGateParams {
    * the result carries the suggestion back to the caller for recording.
    */
   sessionApproval?: { surface: string; pattern: string };
+
+  /**
+   * Persistent-approval suggestion to record when the user selects
+   * "permanently". When present and the decision is `approved_permanently`,
+   * the result carries the suggestion back to the caller for recording.
+   */
+  persistentApproval?: { surface: string; pattern: string };
 
   /** Write a review-log entry. Called for deny and ask-but-unavailable paths. */
   writeLog: (event: string, extra: Record<string, unknown>) => void;
@@ -77,6 +84,9 @@ export async function applyPermissionGate(
     }
     if (decision.state === "approved_for_session" && params.sessionApproval) {
       return { action: "allow", sessionApproval: params.sessionApproval };
+    }
+    if (decision.state === "approved_permanently" && params.persistentApproval) {
+      return { action: "allow", persistentApproval: params.persistentApproval };
     }
   }
 

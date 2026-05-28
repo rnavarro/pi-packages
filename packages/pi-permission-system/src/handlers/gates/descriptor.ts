@@ -28,6 +28,12 @@ export interface GateDescriptor {
   sessionApproval?:
     | { surface: string; pattern: string }
     | { surface: string; patterns: string[] };
+  /**
+   * Persistent-approval suggestion for "permanently" option.
+   * Single pattern only — multi-pattern gates should omit this
+   * (the permanent option simply won't appear in the dialog).
+   */
+  persistentApproval?: { surface: string; pattern: string };
   /** Details passed to the interactive permission prompt (requestId is added by the runner). */
   promptDetails: Omit<PromptPermissionDetails, "requestId">;
   /** Extra context fields written to the review log alongside gate outcomes. */
@@ -88,6 +94,7 @@ export interface GateRunnerDeps {
   ): PermissionCheckResult;
   getSessionRuleset(): Rule[];
   approveSessionRule(surface: string, pattern: string): void;
+  approvePersistentRule(surface: string, pattern: string): { added: boolean; error?: string };
   writeReviewLog(event: string, details: Record<string, unknown>): void;
   emitDecision(event: PermissionDecisionEvent): void;
   canConfirm(): boolean;

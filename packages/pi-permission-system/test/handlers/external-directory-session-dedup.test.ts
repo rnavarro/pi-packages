@@ -136,6 +136,7 @@ function makeStatefulSession(
     getToolPermission: vi.fn().mockReturnValue("allow"),
     getSessionRuleset,
     approveSessionRule,
+    approvePersistentRule: vi.fn().mockReturnValue({ added: true }),
     getActiveSkillEntries: vi.fn().mockReturnValue([]),
     getInfrastructureDirs: vi.fn().mockReturnValue([]),
     getInfrastructureReadPaths: vi.fn().mockReturnValue([]),

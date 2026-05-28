@@ -10,6 +10,8 @@ export interface SessionApprovalSuggestion {
   pattern: string;
   /** Human-readable label for the "for session" dialog option. */
   label: string;
+  /** Human-readable label for the "permanently" dialog option. */
+  persistentLabel: string;
 }
 
 /**
@@ -81,6 +83,27 @@ function buildLabel(pattern: string, surface: string): string {
   }
 }
 
+/** Surface-aware human-readable labels for the permanent-approval option. */
+function buildPersistentLabel(pattern: string, surface: string): string {
+  switch (surface) {
+    case "bash":
+      return `Yes, allow bash "${pattern}" permanently`;
+    case "mcp":
+      return `Yes, allow mcp tool "${pattern}" permanently`;
+    case "skill":
+      return `Yes, allow skill "${pattern}" permanently`;
+    case "external_directory":
+      return `Yes, allow access to external directory "${pattern}" permanently`;
+    case "path":
+      return `Yes, allow path "${pattern}" permanently`;
+    default:
+      if (PATH_BEARING_TOOLS.has(surface) && pattern !== "*") {
+        return `Yes, allow ${surface} "${pattern}" permanently`;
+      }
+      return `Yes, allow tool "${surface}" permanently`;
+  }
+}
+
 /**
  * Suggest a session-approval pattern for the given permission surface and value.
  *
@@ -120,5 +143,5 @@ export function suggestSessionPattern(
       break;
   }
 
-  return { surface, pattern, label: buildLabel(pattern, surface) };
+  return { surface, pattern, label: buildLabel(pattern, surface), persistentLabel: buildPersistentLabel(pattern, surface) };
 }

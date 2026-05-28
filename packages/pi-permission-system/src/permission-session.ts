@@ -9,6 +9,7 @@ import type { ExtensionPaths } from "./extension-paths";
 import type { ForwardingController } from "./forwarding-manager";
 import type { PermissionPromptDecision } from "./permission-dialog";
 import type { PermissionManager } from "./permission-manager";
+import type { PersistentApprovalResult } from "./persistent-rules-writer";
 import type { PromptPermissionDetails } from "./permission-prompter";
 import type { Rule } from "./rule";
 import { createPermissionManagerForCwd } from "./runtime";
@@ -37,6 +38,8 @@ export interface PermissionSessionRuntimeDeps {
     ctx: ExtensionContext,
     details: PromptPermissionDetails,
   ): Promise<PermissionPromptDecision>;
+  /** Persist an allow rule to the global config file. */
+  approvePersistentRule(surface: string, pattern: string): PersistentApprovalResult;
 }
 
 /**
@@ -129,6 +132,10 @@ export class PermissionSession {
 
   approveSessionRule(surface: string, pattern: string): void {
     this.sessionRules.approve(surface, pattern);
+  }
+
+  approvePersistentRule(surface: string, pattern: string): PersistentApprovalResult {
+    return this.runtimeDeps.approvePersistentRule(surface, pattern);
   }
 
   // ── Session lifecycle ────────────────────────────────────────────────────
